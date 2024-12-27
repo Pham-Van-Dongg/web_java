@@ -13,6 +13,7 @@ import com.phongkhamnhakhoa.model.User;
 import com.phongkhamnhakhoa.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import jakarta.websocket.Session;
+
 @Controller
 public class UserController {
 	
@@ -20,6 +21,7 @@ public class UserController {
 	private UserRepository repo;
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	
 	@GetMapping("/index")
 	public String viewHomePage() {
 		return "index";
@@ -39,23 +41,19 @@ public class UserController {
 		String encodedPassword = passwordEncoder.encode(user.getPassword());
 		user.setPassword(encodedPassword);
 		repo.save(user);
-		
-		session.setAttribute("loggedInUser", user);
-	    session.setAttribute("fullName", user.getFirstName() + " " + user.getLastName());
-	    System.out.println("Session User: " + session.getAttribute("loggedInUser"));
-	    System.out.println("Session FullName: " + session.getAttribute("fullName"));
-	    return "index";
+	    return "login";
 	}
 	@GetMapping("/login")
     public String showLoginPage() {
         return "login"; // Trả về file login.html hoặc login.jsp
     }
+	
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
 		session.invalidate();
 		return "Logged out successfully!";
 	}
-	
+
 	@GetMapping("/")
 	public String index(@AuthenticationPrincipal CustomUserDetails userDetails, Model model, HttpSession session) {
 	    if (userDetails != null) {
