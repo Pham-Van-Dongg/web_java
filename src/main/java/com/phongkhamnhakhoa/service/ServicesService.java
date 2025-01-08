@@ -22,15 +22,6 @@ public class ServicesService {
     public Services saveService(Services services) {
         return servicesRepository.save(services);
     }
-
-//    public void deleteService(Long id) {
-//        servicesRepository.deleteById(id);
-//        if (servicesRepository.existsById(id)) {
-//            servicesRepository.deleteById(id);
-//        } else {
-//            throw new RuntimeException("Dịch vụ không tồn tại với ID: " + id);
-//        }
-//    }
     
     public void deleteServiceById(Long id) {
         if (servicesRepository.existsById(id)) {
