@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Hóa Đơn</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/index_css.css">
+    <link rel="stylesheet" href="/popup_patients/popup.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h3>Quản lý phòng khám</h3>
+        </div>
+        <ul class="list-unstyled components">
+            <li><a th:href="@{/patients}">Quản lý bệnh nhân</a></li>
+            <li><a href="#">Quản lý lịch khám</a></li>
+            <li><a th:href="@{/services}">Quản lý dịch vụ</a></li>
+            <li><a th:href="@{/bills}">Quản lý hóa đơn</a></li>
+        </ul>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand">Phòng Khám Nha Khoa</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <div class="navbar-brand" th:if="${#authentication.name != 'anonymousUser'}">
+                            Welcome, <a th:text="${#authentication.principal.fullName}">User</a>
+                        </div>
+                        <li class="nav-item">
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="btn btn-danger">Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container my-4">
+            <h1 class="text-center mb-3">Danh Sách Hóa Đơn</h1>
+
+            <!-- Popup thêm hóa đơn -->
+            <div id="addModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Thêm Hóa Đơn</h2>
+                    <form id="addBillForm" th:action="@{/bills/add}" method="POST" th:object="${bill}">
+                        <div class="mb-3">
+                            <label for="appointmentId" class="form-label">ID Lịch Khám</label>
+                            <input type="text" class="form-control" id="appointmentId" th:field="*{appointmentId}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="totalAmount" class="form-label">Tổng Số Tiền</label>
+                            <input type="number" class="form-control" id="totalAmount" th:field="*{totalAmount}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Gửi</button>
+                        <button type="button" class="btn btn-secondary" id="cancelAdd">Hủy</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Popup sửa hóa đơn -->
+            <div id="editModal" class="modal">
+                <div class="modal-content">
+                    <span class="closeEdit">&times;</span>
+                    <h2>Sửa Hóa Đơn</h2>
+                    <form id="editBillForm" th:action="@{/bills/edit/{id}(id=${bill.id})}" method="POST">
+                        <input type="hidden" id="editId" name="id">
+                        <div class="mb-3">
+                            <label for="editAppointmentId" class="form-label">ID Lịch Khám</label>
+                            <input type="text" class="form-control" id="editAppointmentId" name="appointmentId" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTotalAmount" class="form-label">Tổng Số Tiền</label>
+                            <input type="number" class="form-control" id="editTotalAmount" name="totalAmount" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Cập Nhật</button>
+                        <button type="button" class="btn btn-secondary" id="cancelEdit">Hủy</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Popup xác nhận xóa hóa đơn -->
+            <div id="deleteModal" class="modal">
+                <div class="modal-content">
+                    <span class="closeDelete">&times;</span>
+                    <h2>Xác nhận xóa hóa đơn</h2>
+                    <p>Bạn có chắc chắn muốn xóa hóa đơn này?</p>
+                    <form id="deleteBillForm" method="POST">
+                        <input type="hidden" name="_csrf" value="CSRF_TOKEN_HERE">
+                        <input type="hidden" name="id" value="INVOICE_ID_HERE">
+                    </form>
+                    <button id="confirmDelete" class="btn btn-danger">Xóa</button>
+                    <button type="button" class="btn btn-secondary" id="cancelDelete">Hủy</button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary mb-3" id="openAddModal">Thêm Hóa Đơn</button>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID Lịch Khám</th>
+                        <th>Tổng Số Tiền</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="bill : ${bills}">
+                        <td th:text="${bill.id}"></td>
+                        <td th:text="${bill.appointmentId}"></td>
+                        <td th:text="${bill.totalAmount}"></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary openEditModal" th:data-id="${bill.id}" th:data-appointmentId="${bill.appointmentId}" th:data-totalAmount="${bill.totalAmount}">Sửa</button>
+                            <button class="btn btn-sm btn-danger openDeleteModal" th:data-id="${bill.id}">Xóa</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Mở popup thêm hóa đơn
+            document.getElementById("openAddModal").onclick = function() {
+                document.getElementById("addModal").style.display = "block";
+            };
+
+            // Đóng popup khi nhấn vào nút "x"
+            const closeAdd = document.getElementsByClassName("close")[0];
+            closeAdd.onclick = function() {
+                document.getElementById("addModal").style.display = "none";
+            };
+
+            // Đóng popup khi nhấn nút hủy
+            document.getElementById("cancelAdd").onclick = function() {
+                document.getElementById("addModal").style.display = "none";
+            };
+
+            // Mở popup sửa hóa đơn
+            document.querySelectorAll(".openEditModal").forEach((btn) => {
+                btn.onclick = function() {
+                    const billId = this.getAttribute("data-id");
+                    const appointmentId = this.getAttribute("data-appointmentId");
+                    const totalAmount = this.getAttribute("data-totalAmount");
+
+                    document.getElementById("editId").value = billId;
+                    document.getElementById("editAppointmentId").value = appointmentId;
+                    document.getElementById("editTotalAmount").value = totalAmount;
+
+                    document.getElementById("editModal").style.display = "block";
+                };
+            });
+
+            // Đóng popup sửa khi nhấn vào nút "x"
+            const closeEdit = document.getElementsByClassName("closeEdit")[0];
+            closeEdit.onclick = function() {
+                document.getElementById("editModal").style.display = "none";
+            };
+
+            // Đóng popup sửa khi nhấn nút hủy
+            document.getElementById("cancelEdit").onclick = function() {
+                document.getElementById("editModal").style.display = "none";
+            };
+
+            // Xử lý popup xóa hóa đơn
+            document.addEventListener("DOMContentLoaded", function () {
+                const deleteModal = document.getElementById("deleteModal");
+                const closeDelete = document.getElementsByClassName("closeDelete")[0];
+                const cancelDelete = document.getElementById("cancelDelete");
+                const deleteBillForm = document.getElementById("deleteBillForm");
+
+                document.querySelectorAll(".openDeleteModal").forEach((btn) => {
+                    btn.onclick = function () {
+                        const billId = this.getAttribute("data-id");
+                        if (billId) {
+                            const csrfToken = document.querySelector('input[name="_csrf"]').value;
+                            deleteBillForm.innerHTML = `
+                                <input type="hidden" name="_csrf" value="${csrfToken}">
+                                <input type="hidden" name="id" value="${billId}">
+                            `;
+                            deleteModal.style.display = "block";
+                        }
+                    };
+                });
+
+                document.getElementById("confirmDelete").onclick = function () {
+                    const billId = deleteBillForm.querySelector('input[name="id"]').value;
+                    if (!billId) {
+                        alert("Không thể xóa vì không tìm thấy ID hóa đơn!");
+                        return;
+                    }
+
+                    fetch(`/bills/delete/${billId}`, {
+                        method: "DELETE",
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value
+                        }
+                    })
+                    .then(response => response.ok ? response.text() : Promise.reject())
+                    .then(message => {
+                        alert(message);
+                        window.location.reload();
+                    })
+                    .catch(() => alert("Đã xảy ra lỗi khi xóa hóa đơn!"));
+                };
+
+                closeDelete.onclick = function () {
+                    deleteModal.style.display = "none";
+                };
+
+                cancelDelete.onclick = function () {
+                    deleteModal.style.display = "none";
+                };
+
+                window.onclick = function (event) {
+                    if (event.target === deleteModal) {
+                        deleteModal.style.display = "none";
+                    }
+                };
+            });
+
+            window.onclick = function(event) {
+                if (event.target === document.getElementById("addModal")) {
+                    document.getElementById("addModal").style.display = "none";
+                }
+                if (event.target === document.getElementById("editModal")) {
+                    document.getElementById("editModal").style.display = "none";
+                }
+                if (event.target === document.getElementById("deleteModal")) {
+                    document.getElementById("deleteModal").style.display = "none";
+                }
+            };
+        </script>
+    </div>
+</body>
+</html>
