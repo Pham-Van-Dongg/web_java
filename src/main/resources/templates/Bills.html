@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Danh sách hóa đơn</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet" href="/index_css.css">
+<link rel="stylesheet" href="/service.css">
+</head>
+
+<body>
+	<!-- Sidebar -->
+	<div id="sidebar">
+		<div class="sidebar-header">
+			<h3>Quản lý phòng khám</h3>
+		</div>
+		<ul class="list-unstyled components">
+			<li><a th:href="@{/patients}">Quản lý bệnh nhân</a></li>
+			<li><a th:href="@{/appointments}">Quản lý lịch khám</a></li>
+			<li><a th:href="@{/services}">Quản lý dịch vụ</a></li>
+			<li><a th:href="@{/bills}">Quản lý hóa đơn</a></li>
+		</ul>
+	</div>
+
+	<!-- Content -->
+	<div class="content">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container-fluid">
+				<a class="navbar-brand">Phòng Khám Nha Khoa</a>
+				<button class="navbar-toggler" type="button"
+					data-bs-toggle="collapse" data-bs-target="#navbarNav"
+					aria-controls="navbarNav" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<div class="navbar-nav ms-auto">
+						<div class="navbar-brand"
+							th:if="${#authentication.name != 'anonymousUser'}">
+							Welcome, <a class="navbar-brand"
+								th:text="${#authentication.principal.fullName}">User</a>
+						</div>
+						<div class="nav-item">
+							<form method="post" th:action="@{/logout}">
+								<button class="btn btn-danger" type="submit">Đăng xuất</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container my-4">
+			<h1 class="text-center mb-3">Danh Sách Hóa Đơn</h1>
+
+			<!-- Bill Details Modal -->
+			<div id="billDetailModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 26px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 95%; border-radius: 8px;">
+					<span class="closeEdit" style="position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Thông tin</h2>
+					<h2>hóa đơn</h2>
+					<form>
+						<div class="mb-3">
+							<label for="billId" class="form-label">Mã hóa đơn</label> <input
+								type="text" class="form-control" id="billId" readonly>
+							<!-- readonly để không cho nhập -->
+						</div>
+
+						<div class="mb-3">
+							<label for="patientName" class="form-label">Tên người đặt
+								lịch</label> <input type="text" class="form-control" id="patientName"
+								name="name" readonly>
+							<!-- readonly để không cho nhập -->
+						</div>
+
+						<div class="mb-3">
+							<label for="appointmentDate" class="form-label">Ngày đặt
+								lịch</label> <input type="date" class="form-control"
+								id="appointmentDate" name="appointment_date" readonly>
+							<!-- readonly để không cho nhập -->
+						</div>
+
+						<div class="mb-3">
+							<label for="doctor" class="form-label">Bác Sĩ</label> <input
+								type="text" class="form-control" id="doctor" readonly>
+							<!-- readonly để không cho nhập -->
+						</div>
+
+						<div class="mb-3">
+							<label for="serviceName" class="form-label">Dịch Vụ</label> <input
+								type="text" class="form-control" id="serviceName" readonly>
+							<!-- readonly để không cho nhập -->
+						</div>
+
+						<div class="mb-3">
+							<label for="servicePrice" class="form-label">Giá</label> <input
+								type="text" class="form-control" id="servicePrice" readonly>
+							<!-- readonly để không cho nhập -->
+						</div>
+
+						<button type="button" class="btn btn-secondary" id="cancelEdit" style="background-color: gray; right: 40px; position: absolute;">Đóng</button>
+					</form>
+
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<div class="input-group">
+					<input type="text" id="searchInput" class="form-control"
+						placeholder="Nhập mã hóa đơn hoặc tên bệnh nhân..."
+						style="width: 250px;">
+					<button class="btn btn-primary" id="searchButton">Tìm kiếm
+					</button>
+				</div>
+			</div>
+
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Mã hóa đơn</th>
+						<th>Tên</th>
+						<th>Ngày tạo</th>
+						<th>Hành Động</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="bills : ${listBills}">
+						<td th:text="${bills.id}"></td>
+						<td th:text="${bills.appointment_id}"></td>
+						<td th:text="${bills.patientName}"></td>
+						<td th:text="${bills.appointmentDate}"></td>
+						<td>
+							<!-- Cập nhật data-appointment_id với đúng giá trị -->
+							<button class="btn btn-sm btn-primary billDetailModal"
+								th:data-appointment_id="${bills.appointment_id}">Chi
+								tiết</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+		<script>
+     // Khi nhấn nút chi tiết, mở modal và hiển thị thông tin
+        document.querySelectorAll('.billDetailModal').forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-appointment_id');
+                
+                // Gửi yêu cầu lấy thông tin chi tiết hóa đơn
+                fetch(`/bills/${appointmentId}`) // Cập nhật URL nếu cần
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Dữ liệu trả về:', data);
+                        if (Array.isArray(data) && data.length > 0) {
+                            data = data[0];  // Lấy phần tử đầu tiên của mảng
+                        }
+                        if (data) {
+                            // Cập nhật giá trị vào form
+                            document.getElementById('billId').value = data.billId;
+                            document.getElementById('patientName').value = data.patientName;
+                            document.getElementById('appointmentDate').value = data.appointmentDate;
+                            document.getElementById('doctor').value = data.doctor;
+                            document.getElementById('serviceName').value = data.serviceName;
+                            document.getElementById('servicePrice').value = data.servicePrice;
+
+                            // Mở modal
+                            document.getElementById('billDetailModal').style.display = 'block';
+                            document.getElementById("searchButton").style.display = "none";
+                        }
+                    });
+             // Đóng popup sửa khi nhấn vào nút "x"
+                const closeEdit = document.getElementsByClassName("closeEdit")[0];
+                closeEdit.onclick = function() {
+                    document.getElementById("billDetailModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                };
+
+                // Đóng popup sửa khi nhấn nút hủy
+                document.getElementById("cancelEdit").onclick = function() {
+                    document.getElementById("billDetailModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                };
+            });
+        });
+        </script>
+		<script>
+		document.getElementById('searchButton').addEventListener('click', function() {
+		    const searchValue = document.getElementById('searchInput').value;
+
+		    // Gửi yêu cầu tìm kiếm đến server
+		    fetch(`/bills/search?query=${encodeURIComponent(searchValue)}`)
+		        .then(response => response.json())
+		        .then(data => {
+		            // Xóa nội dung bảng hiện tại
+		            const tbody = document.querySelector('tbody');
+		            tbody.innerHTML = '';
+
+		            // Kiểm tra nếu không có hóa đơn nào được tìm thấy
+		            if (data.length === 0) {
+		                const noResultsRow = document.createElement('tr');
+		                noResultsRow.innerHTML = '<td colspan="5" class="text-center">Không tìm thấy hóa đơn nào!</td>';
+		                tbody.appendChild(noResultsRow);
+		                return;
+		            }
+
+		            // Thêm kết quả tìm kiếm vào bảng
+		            data.forEach(bill => {
+		                const row = document.createElement('tr');
+		                row.innerHTML = `
+		                    <td>${bill.id}</td>
+		                    <td>${bill.appointment_id}</td>
+		                    <td>${bill.patientName}</td>
+		                    <td>${bill.appointmentDate}</td>
+		                    <td>
+		                        <button class="btn btn-sm btn-primary billDetailModal" data-appointment_id="${bill.appointment_id}">Chi tiết</button>
+		                    </td>
+		                `;
+		                tbody.appendChild(row);
+		            });
+
+		            // Gắn sự kiện cho các nút "Chi tiết" trong kết quả tìm kiếm
+		            document.querySelectorAll('.billDetailModal').forEach(button => {
+		                button.addEventListener('click', function() {
+		                    const appointmentId = this.getAttribute('data-appointment_id');
+
+		                    // Gửi yêu cầu lấy thông tin chi tiết hóa đơn
+		                    fetch(`/bills/${appointmentId}`)
+		                        .then(response => response.json())
+		                        .then(data => {
+		                            console.log('Dữ liệu trả về:', data);
+		                            if (Array.isArray(data) && data.length > 0) {
+		                                data = data[0];  // Lấy phần tử đầu tiên của mảng
+		                            }
+		                            if (data) {
+		                                // Cập nhật giá trị vào form
+		                                document.getElementById('billId').value = data.billId;
+		                                document.getElementById('patientName').value = data.patientName;
+		                                document.getElementById('appointmentDate').value = data.appointmentDate;
+		                                document.getElementById('doctor').value = data.doctor;
+		                                document.getElementById('serviceName').value = data.serviceName;
+		                                document.getElementById('servicePrice').value = data.servicePrice;
+
+		                                // Mở modal
+		                                document.getElementById('billDetailModal').style.display = 'block'; 
+		                            }
+		                        });
+		                });
+		            });
+		        })
+		        .catch(error => {
+		            console.error('Lỗi:', error);
+		            alert("Đã xảy ra lỗi trong quá trình tìm kiếm!");
+		        });
+		});
+		</script>
+	</div>
+</body>
+</html>

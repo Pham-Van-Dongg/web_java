@@ -2,6 +2,10 @@ package com.phongkhamnhakhoa.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 import com.phongkhamnhakhoa.model.Services;
 import com.phongkhamnhakhoa.repository.ServicesRepository;
@@ -22,15 +26,6 @@ public class ServicesService {
     public Services saveService(Services services) {
         return servicesRepository.save(services);
     }
-
-//    public void deleteService(Long id) {
-//        servicesRepository.deleteById(id);
-//        if (servicesRepository.existsById(id)) {
-//            servicesRepository.deleteById(id);
-//        } else {
-//            throw new RuntimeException("Dịch vụ không tồn tại với ID: " + id);
-//        }
-//    }
     
     public void deleteServiceById(Long id) {
         if (servicesRepository.existsById(id)) {
@@ -42,4 +37,16 @@ public class ServicesService {
     public List<Services> searchServices(String name) {
         return servicesRepository.findByNameContaining(name);
     }
+
+    public List<Services> getAllServices(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        return servicesRepository.findAll(pageable).getContent();
+    }
+
+    public long count() {
+        return servicesRepository.count();
+    }
 }
+
+}
+

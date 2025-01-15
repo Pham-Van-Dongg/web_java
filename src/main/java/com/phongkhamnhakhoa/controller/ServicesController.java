@@ -46,16 +46,7 @@ public class ServicesController {
 		return "redirect:/services"; // Quay về trang danh sách dịch vụ
 	}
 
-	// Xóa dịch vụ
-//    @DeleteMapping("/delete/{id}")
-//    public String deleteService(@PathVariable Long id) {
-//        try {
-//            servicesService.deleteServiceById(id);
-//            return "redirect:/services"; // Quay lại danh sách dịch vụ sau khi xóa
-//        } catch (RuntimeException e) {
-//            return "redirect:/services"; // Nếu có lỗi, quay lại danh sách
-//        }
-//    }
+
 	// Xóa dịch vụ
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteService(@PathVariable Long id) {
@@ -68,24 +59,23 @@ public class ServicesController {
 		}
 	}
 
-//    @DeleteMapping("/delete/{id}")
-//    public String deleteService(@PathVariable Long id, Model model) {
-//        try {
-//            servicesService.deleteServiceById(id); 
-//            model.addAttribute("message", "Xóa dịch vụ thành công!");
-//            return "redirect:/services"; // Trở lại danh sách dịch vụ
-//        } catch (RuntimeException e) {
-//        	 model.addAttribute("errorMessage", "Không thể xóa dịch vụ: " + e.getMessage());
-//            // Xử lý lỗi nếu cần, chẳng hạn ghi log hoặc hiển thị thông báo
-//            return "redirect:/services"; // Quay về trang danh sách dịch vụ
-//        }
-//    }
 
 	// Tìm kiếm dịch vụ theo tên
 	@GetMapping("/search")
-	public String searchServices(@RequestParam("name") String name, Model model) {
-		List<Services> listServices = servicesService.searchServices(name);
-		model.addAttribute("listServices", listServices);
-		return "services"; // Trả về file templates/services.html
+	public ResponseEntity<List<Services>> searchServices(@RequestParam("name") String name) {
+	    List<Services> listServices = servicesService.searchServices(name);
+	    return ResponseEntity.ok(listServices); // Trả về dữ liệu dưới dạng JSON
+	}
+	
+	@GetMapping("/services")
+	public String showListService(@RequestParam(defaultValue = "1") int page, 
+	                               @RequestParam(defaultValue = "5") int size, 
+	                               Model model) {
+	    List<Services> listServices = servicesService.getAllServices(page, size);
+	    model.addAttribute("listServices", listServices);
+	    model.addAttribute("services", new Services());
+	    model.addAttribute("currentPage", page);
+	    model.addAttribute("totalPages", (int) Math.ceil((double) servicesService.count() / size));
+	    return "services"; 
 	}
 }

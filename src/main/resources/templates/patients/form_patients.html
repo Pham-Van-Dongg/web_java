@@ -19,9 +19,9 @@
 		</div>
 		<ul class="list-unstyled components">
 			<li><a th:href="@{/patients}">Quản lý bệnh nhân</a></li>
-			<li><a href="#">Quản lý lịch khám</a></li>
+			<li><a th:href="@{/appointments}">Quản lý lịch khám</a></li>
 			<li><a th:href="@{/services}">Quản lý dịch vụ</a></li>
-			<li><a href="#">Quản lý hóa đơn</a></li>
+			<li><a th:href="@{/bills}">Quản lý hóa đơn</a></li>
 		</ul>
 	</div>
 
@@ -38,136 +38,72 @@
 					<span class="navbar-toggler-icon"></span>
 				</button>
 				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav ms-auto">
-						<div class="navbar-brand" th:if="${#authentication.name != 'anonymousUser'}">
-                          
-                                Welcome, <a th:text="${#authentication.principal.fullName}">User</a>
-                           
-                        </div>
-						<li class="nav-item">
-							<form th:action="@{/logout}" method="post">
-								<button type="submit" class="btn btn-danger">Đăng xuất</button>
-							</form>
-						</li>
-					</ul>
-				</div>
+                <div class="navbar-nav ms-auto">
+                    <div class="navbar-brand" th:if="${#authentication.name != 'anonymousUser'}">
+                        Welcome, <a class="navbar-brand"
+                                    th:text="${#authentication.principal.fullName}">User</a>
+                    </div>
+                    <div class="nav-item">
+                        <form method="post" th:action="@{/logout}">
+                            <button class="btn btn-danger" type="submit">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 			</div>
+			
+	
 		</nav>
 
 		<div class="container my-4">
 			<h1 class="text-center mb-3">Danh Sách Bệnh Nhân</h1>
 
-			<!-- Popup thêm thông tin-->
-			<div id="myModal" class="modal">
-				<div class="modal-content">
-					<span class="close">&times;</span>
-					<h2>Thêm Bệnh Nhân</h2>
-					<form id="addPatientForm" th:action="@{/patients/save}" th:object="${patients1}"
-						method="POST">
-						
-						<div class="mb-3">
-							<label for="firstName" class="form-label">Tên họ</label> 
-							<input type="text" class="form-control" id="firstName"
-								th:field="*{firstName}" required>
-						</div>
-						
-						<div class="mb-3">
-							<label for="lastName" class="form-label">Tên đệm</label> 
-							<input type="text" class="form-control" id="lastName"
-								th:field="*{lastName}" required>
-						</div>
-						
-						<div class="mb-3">
-							<label for="birthDate" class="form-label">Ngày sinh</label> 
-							<input type="date" class="form-control" id="birthDate"
-								th:field="*{birthDate}" required>
-						</div>
-						
-						<div class="mb-3">
-							<label for="phone" class="form-label">Số điện thoại</label>
-							<input type="text" class="form-control" id="phone" 
-							th:field="*{phone}" required>
-						</div>
-						
-						<div class="mb-3">
-							<label for="email" class="form-label">Email</label> 
-							<input type="email" class="form-control" id="email" 
-							th:field="*{email}" required>
-						</div>
-						<div class="mb-3">
-							<label for="address" class="form-label">Địa chỉ</label> 
-							<input type="text" class="form-control" id="address"
-								th:field="*{address}" required>
-						</div>
-						<button type="submit" class="btn btn-primary">Gửi</button>
-						<button type="button" class="btn btn-primary" id="cancel" style="background-color: gray;"  onclick="cancelDelete()">Hủy</button>
-					</form>
-				</div>
-			</div>
-
-
+			<!-- Search Bar -->
+			<form action="/patients" method="get" class="mb-3">
+				<input type="text" name="keyword"
+					placeholder="Tìm kiếm theo tên bệnh nhân" value=""
+					class="form-control d-inline-block"
+					style="width: 235px; display: inline;">
+				<button type="submit" class="btn btn-primary">Tìm kiếm</button>
+			</form>
 
 			<!-- Popup sửa thông tin-->
 			<div id="myModal1" class="modal">
 				<div class="modal-content">
-					<span class="close1">&times;</span>
+					<span class="close1" style="position: absolute; top: 7px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					
 					<h2>Sửa thông tin bệnh nhân</h2>
 					<form id="editPatientForm" th:action="@{/patients/update/{id}}"
 						method="POST">
 
 						<div class="mb-3">
-							<label for="firstName" class="form-label">Tên họ</label> 
-							<input type="text" class="form-control" id="firstName_js"
-								name="firstName" required>
+							<label for="name_id" class="form-label">Tên</label> <input
+								type="text" class="form-control" id="name_js" name="name_id"
+								required readonly
+								style="background-color: #343a40; color: #ffffff; border: 1px solid #ced4da;">
 						</div>
+
 						<div class="mb-3">
-							<label for="lastName" class="form-label">Tên đệm</label> 
-							<input type="text" class="form-control" id="lastName_js"
-								name="lastName" required>
-						</div>
-						<div class="mb-3">
-							<label for="birthDate" class="form-label">Ngày sinh</label> 
-							<input type="date" class="form-control" id="birthday_js"
+							<label for="birthDate" class="form-label">Ngày sinh</label> <input
+								type="date" class="form-control" id="birthday_js"
 								name="birthDate" required>
 						</div>
 						<div class="mb-3">
-							<label for="phone" class="form-label">Số điện thoại</label> 
-							<input type="text" class="form-control" id="phone_js" 
-							name="phone" required>
+							<label for="phone" class="form-label">Số điện thoại</label> <input
+								type="text" class="form-control" id="phone_js" name="phone"
+								required>
 						</div>
 						<div class="mb-3">
-							<label for="email" class="form-label">Email</label> 
-							<input type="email" class="form-control" id="email_js" 
-							name="email" required>
+							<label for="address" class="form-label">Địa chỉ</label> <input
+								type="text" class="form-control" id="address_js" name="address"
+								required>
 						</div>
-						<div class="mb-3">
-							<label for="address" class="form-label">Địa chỉ</label> 
-							<input type="text" class="form-control" id="address_js" 
-							name="address" required>
-						</div>
-						<button type="submit" class="btn btn-primary">Gửi</button>
-						<button type="button" class="btn btn-primary" id="cancel1" style="background-color: gray;" onclick="cancelDelete1()">Hủy</button>
+						<button type="submit" class="btn btn-primary" style = "position: absolute; right: 80px">Gửi</button>
+						<button type="button" class="btn btn-primary" id="cancel1" style="background-color: gray; right: 20px; position: absolute;" onclick="cancelDelete1()">Hủy</button>
 					</form>
 				</div>
 			</div>
 
-			<!-- popup xóa thông tin -->
-			<div id="myModal2" class="modal">
-				<div class="modal-content">
-					<span class="close2">&times;</span>
-					<h2>Xác nhận xóa bệnh nhân</h2>
-					<p>Bạn có chắc chắn muốn xóa bệnh nhân này?</p>
-					<form id="deletePatientForm" th:action="@{/patients/delete/{id}}"
-						method="POST">
-						<input type="hidden" id="patientId" name="id">
-						<button type="submit" class="btn btn-danger">Xóa</button>
-						<button type="button" class="btn btn-primary" id="cancel2" style="background-color: gray;" onclick="cancelDelete2()">Hủy</button>
-					</form>
-				</div>
-			</div>
-
-			<a class="btn btn-primary mb-3" id="openModal">Thêm Bệnh Nhân</a>
-			
 			<table class="table table-bordered">
 				<thead>
 					<tr>
@@ -175,7 +111,6 @@
 						<th>Họ và Tên</th>
 						<th>Ngày Sinh</th>
 						<th>Số Điện Thoại</th>
-						<th>Email</th>
 						<th>Địa Chỉ</th>
 						<th>Hành Động</th>
 					</tr>
@@ -184,63 +119,27 @@
 					<!-- Duyệt qua danh sách bệnh nhân -->
 					<tr th:each="patient : ${patients}">
 						<td th:text="${patient.id}"></td>
-						<td th:text="${patient.firstName + ' ' + patient.lastName}"></td>
+						<td th:text="${patient.name_id}"></td>
 						<td th:text="${#dates.format(patient.birthDate, 'dd-MM-yyyy')}"></td>
 						<td th:text="${patient.phone}"></td>
-						<td th:text="${patient.email}"></td>
 						<td th:text="${patient.address}"></td>
 						<td><a class="btn btn-sm btn-primary openModal1"
-							th:data-id="${patient.id}"
-							th:data-firstName="${patient.firstName}"
-							th:data-lastName="${patient.lastName}"
+							th:data-id="${patient.id}" th:data-name_id="${patient.name_id}"
 							th:data-birthday="${#dates.format(patient.birthDate, 'dd-MM-yyyy')}"
-							th:data-phone="${patient.phone}" th:data-email="${patient.email}"
+							th:data-phone="${patient.phone}"
 							th:data-address="${patient.address}" onclick="handleEdit(this)">Sửa</a>
-
-							<!-- th:href="@{/patients/delete(id=${patient.id})}" --> <a
-							class="btn btn-sm btn-danger openModal2"
-							th:data-id="${patient.id}">Xóa</a></td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
+</div>
 
 		<!-- Bootstrap JS -->
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js">
-</script>
-<script>
-	// Lấy các phần tử từ DOM
-	const modal = document.getElementById("myModal");
-	const btn = document.getElementById("openModal");
-	const span = document.getElementsByClassName("close")[0];
-	const a = document.getElementById("cancel");
-	// Mở popup
-	btn.onclick = function() {
-		modal.style.display = "block";
-	};
-
-	// Đóng popup khi nhấn vào nút "x"
-	span.onclick = function() {
-		modal.style.display = "none";
-	};
-	
-	// Đóng popup khi nhấn ra ngoài vùng nội dung
-	window.onclick = function(event) {
-		if (event.target === modal) {
-			modal.style.display = "none";
-		}
-	};
-	function cancelDelete() {
-        // Đóng popup
-        document.getElementById("myModal").style.display = "none";
-
-        // Xóa thông tin trong form (nếu cần)
-        document.getElementById("addPatientForm").reset();
-  }
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js">
 </script>
 
-<script>
+		<script>
 	document.addEventListener("DOMContentLoaded", function () {
 		// Lấy các phần tử từ DOM
 		const modal1 = document.getElementById("myModal1");
@@ -252,27 +151,31 @@
         	btn.onclick = function () {
             const patientId = this.getAttribute("data-id");
             console.log("Patient ID:", patientId);  // Kiểm tra giá trị
-            const firstName = this.getAttribute("data-firstName");
-            console.log("Patient firstname:", firstName); 
-            const lastName = this.getAttribute("data-lastName");
-            console.log("Patient lastname:", lastName);
+            const name_id = this.getAttribute("data-name_id");
+            console.log("Patient firstname:", name_id);  
                 
             const birthday = this.getAttribute("data-birthday");
             console.log("Patient day:", birthday);
                 
             const phone = this.getAttribute("data-phone");
             console.log("Patient phone:", phone);
-                
-            const email = this.getAttribute("data-email");
-            console.log("Patient email:", email);
-            let formattedBirthday = birthday.split("-").reverse().join("-");
+               
+            //let formattedBirthday = birthday.split("-").reverse().join("-");
             const address = this.getAttribute("data-address");
             console.log("Patient address:", address);
-            document.getElementById("firstName_js").value = firstName;
-            document.getElementById("lastName_js").value = lastName;
+            
+            document.getElementById("name_js").value = name_id;
+         // Kiểm tra giá trị birthday
+            let formattedBirthday;
+            if (birthday) {
+                // Nếu có giá trị, format ngày tháng
+                formattedBirthday = birthday.split("-").reverse().join("-");
+            } else {
+                // Nếu null, đặt giá trị mặc định
+                formattedBirthday = "01-01-2011";
+            }
             document.getElementById("birthday_js").value = formattedBirthday;
             document.getElementById("phone_js").value = phone;
-            document.getElementById("email_js").value = email;
             document.getElementById("address_js").value = address;
             if (patientId) {
               // Cập nhật URL action của form với patientId
@@ -302,7 +205,7 @@
 	  }
 </script>
 
-<script>
+		<script>
 	//Sự kiện popup xóa người dùng
     document.addEventListener("DOMContentLoaded", function () {
     // Lấy các phần tử từ DOM
@@ -320,6 +223,7 @@
         	const form = document.getElementById("deletePatientForm");
             form.action = `/patients/delete/${patientId}`;
             modal.style.display = "block";
+            document.getElementById("searchButton").style.display = "none";
             } 
         else {
             alert("Không tìm thấy ID bệnh nhân.");
@@ -346,8 +250,52 @@
         // Xóa thông tin trong form (nếu cần)
         document.getElementById("deletePatientForm").reset();
     }
+    
+ // Tìm kiếm bệnh nhân
+    document.getElementById('searchButton').addEventListener('click', function () {
+        const searchValue = document.getElementById('searchInput').value;
+
+        // Gửi yêu cầu tìm kiếm đến server
+        fetch(`/patients/search?name=${encodeURIComponent(searchValue)}`)
+            .then(response => response.json())
+            .then(data => {
+                // Xóa nội dung bảng hiện tại
+                const tbody = document.querySelector('tbody');
+                tbody.innerHTML = '';
+
+                // Kiểm tra nếu không có bệnh nhân nào được tìm thấy
+                if (data.length === 0) {
+                    const noResultsRow = document.createElement('tr');
+                    noResultsRow.innerHTML = '<td colspan="6" class="text-center">Không tìm thấy bệnh nhân nào!</td>';
+                    tbody.appendChild(noResultsRow);
+                    return;
+                }
+
+                // Thêm kết quả tìm kiếm vào bảng
+                data.forEach(patient => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${patient.id}</td>
+                        <td>${patient.name_id}</td>
+                        <td>${new Date(patient.birthDate).toLocaleDateString()}</td>
+                        <td>${patient.phone}</td>
+                        <td>${patient.address}</td>
+                        <td>
+                            <a class="btn btn-sm btn-primary openModal1"
+                               data-id="${patient.id}" data-name_id="${patient.name_id}"
+                               data-birthday="${new Date(patient.birthDate).toLocaleDateString()}"
+                               data-phone="${patient.phone}"
+                               data-address="${patient.address}" onclick="handleEdit(this)">Sửa</a>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                alert("Đã xảy ra lỗi trong quá trình tìm kiếm!");
+            });
+    });
 </script>
-		
-		
 </body>
 </html>

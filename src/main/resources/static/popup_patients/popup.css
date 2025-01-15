@@ -18,10 +18,11 @@
 /* Nội dung popup */
 .modal-content {
 	background-color: white;
-	margin: 25px auto; /* Căn giữa màn hình */
+	margin: 130px auto;/* Căn giữa màn hình */
 	padding: 20px;
 	border: 1px solid #888;
 	width: 40%; /* Độ rộng popup */
+	height: 63%;
 	border-radius: 8px;
 }
 

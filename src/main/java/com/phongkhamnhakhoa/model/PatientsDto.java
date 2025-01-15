@@ -13,12 +13,8 @@ import jakarta.validation.constraints.NotNull;
 public class PatientsDto {
 	
 	@NotEmpty(message = "Tên họ không được để trống")
-	@Column(name = "first_name", nullable = false, length = 255)
-	private String firstName;
-
-	@Column(name = "last_name", nullable = false, length = 255)
-	@NotEmpty(message = "Tên chính không được để trống")
-	private String lastName;
+	@Column(name = "name_id", nullable = false, length = 255)
+	private String name_id;
 	
 	@NotNull(message = "Ngày sinh không được để trống")
 	@Temporal(TemporalType.DATE)
@@ -30,28 +26,30 @@ public class PatientsDto {
 	@Column(name = "phone", length = 15)
 	private String phone;
 	
-	@Column(name = "email", unique = true, length = 45)
-	@NotEmpty(message = "Email không được để trống")
-	private String email;
-	
 	@Column(name = "address", length = 255)
 	@NotEmpty(message = "Địa chỉ không được để trống")
 	private String address;
 
-	public String getFirstName() {
-		return firstName;
+	public PatientsDto(@NotEmpty(message = "Tên họ không được để trống") String name_id,
+			@NotNull(message = "Ngày sinh không được để trống") Date birthDate,
+			@NotEmpty(message = "Điện thoại không được để trống") String phone,
+			@NotEmpty(message = "Địa chỉ không được để trống") String address) {
+		super();
+		this.name_id = name_id;
+		this.birthDate = birthDate;
+		this.phone = phone;
+		this.address = address;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+	public PatientsDto() {
+		
+	}
+	public String getName_id() {
+		return name_id;
 	}
 
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setName_id(String name_id) {
+		this.name_id = name_id;
 	}
 
 	public Date getBirthDate() {
@@ -70,14 +68,6 @@ public class PatientsDto {
 		this.phone = phone;
 	}
 
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
 	public String getAddress() {
 		return address;
 	}
@@ -85,6 +75,5 @@ public class PatientsDto {
 	public void setAddress(String address) {
 		this.address = address;
 	}
-	
 	
 }
