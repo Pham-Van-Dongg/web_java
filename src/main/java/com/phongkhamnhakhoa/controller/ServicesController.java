@@ -46,7 +46,7 @@ public class ServicesController {
 		return "redirect:/services"; // Quay về trang danh sách dịch vụ
 	}
 
-	
+
 	// Xóa dịch vụ
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<String> deleteService(@PathVariable Long id) {
@@ -58,6 +58,7 @@ public class ServicesController {
 					.body("Không thể xóa dịch vụ: " + e.getMessage()); // Trả về thông điệp lỗi
 		}
 	}
+
 
 	// Tìm kiếm dịch vụ theo tên
 	@GetMapping("/search")

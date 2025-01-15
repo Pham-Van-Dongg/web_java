@@ -2,8 +2,10 @@ package com.phongkhamnhakhoa.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.stereotype.Service;
 import com.phongkhamnhakhoa.model.Services;
 import com.phongkhamnhakhoa.repository.ServicesRepository;
@@ -35,6 +37,7 @@ public class ServicesService {
     public List<Services> searchServices(String name) {
         return servicesRepository.findByNameContaining(name);
     }
+
     public List<Services> getAllServices(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
         return servicesRepository.findAll(pageable).getContent();
@@ -44,3 +47,6 @@ public class ServicesService {
         return servicesRepository.count();
     }
 }
+
+}
+

@@ -43,6 +43,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/process_register" ,"/register").permitAll() // Cho phép truy cập không cần xác thực
                 
                 .requestMatchers("/webjars/**", "/css/**", "/js/**", "/images/**").permitAll() // Cho phép truy cập file tĩnh
+                .requestMatchers("/services/**").authenticated() // Đảm bảo các endpoint được xác thực
+                .requestMatchers("/services/delete/**").permitAll() 
                 .anyRequest().authenticated() // Các yêu cầu khác cần xác thực
             )
             .formLogin(form -> form

@@ -9,6 +9,7 @@
 	rel="stylesheet">
 <link rel="stylesheet" href="/index_css.css">
 <link rel="stylesheet" href="/service.css">
+<link rel="stylesheet" href="/popup_patients/popup.css">
 </head>
 
 <body>
@@ -37,6 +38,7 @@
 					<span class="navbar-toggler-icon"></span>
 				</button>
 				<div class="collapse navbar-collapse" id="navbarNav">
+
 					<div class="navbar-nav ms-auto">
 						<div class="navbar-brand"
 							th:if="${#authentication.name != 'anonymousUser'}">
@@ -49,6 +51,7 @@
 							</form>
 						</div>
 					</div>
+
 				</div>
 			</div>
 		</nav>
@@ -87,8 +90,10 @@
 
 			<!-- Popup sửa dịch vụ -->
 			<div id="editModal" class="modal">
+
 				<div class="modal-content" style="background-color: white; margin: 140px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 60%; border-radius: 8px;">
 					<span class="closeEdit" style="position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+
 					<h2>Sửa Dịch Vụ</h2>
 					<form id="editServiceForm" th:action="@{/services/edit}"
 						method="POST">
@@ -108,6 +113,7 @@
 								type="number" class="form-control" id="editPrice" name="price"
 								required>
 						</div>
+
 						<button type="submit" class="btn btn-primary" style = "position: absolute; right: 105px">Cập Nhật</button>
 						<button type="button" class="btn btn-secondary" id="cancelEdit" style="background-color: gray; right: 40px; position: absolute;">Hủy</button>
 					</form>
@@ -116,6 +122,7 @@
 
 			<!-- Popup xác nhận xóa dịch vụ -->
 			<div id="deleteModal" class="modal">
+
 				<div class="modal-content" style="background-color: white; margin: 250px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 30%; border-radius: 8px;">
 					<span class="closeDelete"  style="position: absolute; top: 5px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
 					<h2>Xác nhận xóa </h2>
@@ -127,6 +134,7 @@
 						<input type="hidden" name="id" value="SERVICE_ID_HERE">
 						<!-- ID dịch vụ -->
 					</form>
+
 					<button id="confirmDelete" class="btn btn-danger" style = "position: absolute; right: 105px; top: 170px;">Xóa</button>
 					<button type="button" class="btn btn-secondary" id="cancelDelete"  style="background-color: gray; right: 40px; position: absolute; top: 170px;">Hủy</button>
 				</div>
@@ -142,6 +150,15 @@
 					Dịch Vụ</button>
 			</div>
 
+
+					<button id="confirmDelete" class="btn btn-danger">Xóa</button>
+					<button type="button" class="btn btn-secondary" id="cancelDelete">Hủy</button>
+				</div>
+			</div>
+
+
+			<button class="btn btn-primary mb-3" id="openAddModal">Thêm
+				Dịch Vụ</button>
 
 			<table class="table table-bordered">
 				<thead>
@@ -170,7 +187,9 @@
 					</tr>
 				</tbody>
 			</table>
+
 			<div id="pagination" class="my-3 text-center"></div>
+
 		</div>
 
 		<script
@@ -179,6 +198,7 @@
             // Mở popup thêm dịch vụ
             document.getElementById("openAddModal").onclick = function() {
                 document.getElementById("addModal").style.display = "block";
+
                 document.getElementById("searchButton").style.display = "none";
             };
 
@@ -186,13 +206,17 @@
             const closeAdd = document.getElementsByClassName("close")[0];
             closeAdd.onclick = function() {
                 document.getElementById("addModal").style.display = "none";
+
                 document.getElementById("searchButton").style.display = "block";
+
             };
 
             // Đóng popup khi nhấn nút hủy
             document.getElementById("cancelAdd").onclick = function() {
                 document.getElementById("addModal").style.display = "none";
+
                 document.getElementById("searchButton").style.display = "block";
+
            };
 
             // Mở popup sửa dịch vụ
@@ -209,7 +233,9 @@
                     document.getElementById("editPrice").value = servicePrice;
 
                     document.getElementById("editModal").style.display = "block";
+
                     document.getElementById("searchButton").style.display = "none";
+
                 };
             });
 
@@ -217,13 +243,17 @@
             const closeEdit = document.getElementsByClassName("closeEdit")[0];
             closeEdit.onclick = function() {
                 document.getElementById("editModal").style.display = "none";
+
                 document.getElementById("searchButton").style.display = "block";
+
             };
 
             // Đóng popup sửa khi nhấn nút hủy
             document.getElementById("cancelEdit").onclick = function() {
                 document.getElementById("editModal").style.display = "none";
+
                 document.getElementById("searchButton").style.display = "block";
+
             };
 
             //sự kiện popup xóa dịch vụ
@@ -246,6 +276,7 @@
 			                `;
 			                deleteModal.style.display = "block";
 			                document.getElementById("searchButton").style.display = "none";
+
 			            } else {
 			                alert("Không tìm thấy ID dịch vụ.");
 			            }
@@ -287,13 +318,17 @@
                 // Đóng modal khi nhấn vào nút "x"
                 closeDelete.onclick = function () {
                     deleteModal.style.display = "none";
+
                     document.getElementById("searchButton").style.display = "block";
+
                 };
 
                 // Đóng modal khi nhấn nút "Hủy"
                 cancelDelete.onclick = function () {
                     deleteModal.style.display = "none";
+
                     document.getElementById("searchButton").style.display = "block";
+
                 };
 
                 // Đóng modal khi nhấn ra ngoài vùng nội dung
@@ -308,6 +343,7 @@
             window.onclick = function(event) {
                 if (event.target === document.getElementById("addModal")) {
                     document.getElementById("addModal").style.display = "none";
+
                     document.getElementById("searchButton").style.display = "block";
                 }
                 if (event.target === document.getElementById("editModal")) {
@@ -452,6 +488,7 @@
 	                servicesData = data; // Lưu trữ dữ liệu dịch vụ
 	                renderTable(servicesData);
 	       });
+
         </script>
 	</div>
 </body>
