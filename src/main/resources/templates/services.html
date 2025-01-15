@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Danh Sách Dịch Vụ</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet" href="/index_css.css">
+<link rel="stylesheet" href="/service.css">
+</head>
+
+<body>
+	<!-- Sidebar -->
+	<div id="sidebar">
+		<div class="sidebar-header">
+			<h3>Quản lý phòng khám</h3>
+		</div>
+		<ul class="list-unstyled components">
+			<li><a th:href="@{/patients}">Quản lý bệnh nhân</a></li>
+			<li><a th:href="@{/appointments}">Quản lý lịch khám</a></li>
+			<li><a th:href="@{/services}">Quản lý dịch vụ</a></li>
+			<li><a th:href="@{/bills}">Quản lý hóa đơn</a></li>
+		</ul>
+	</div>
+
+	<!-- Content -->
+	<div class="content">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container-fluid">
+				<a class="navbar-brand">Phòng Khám Nha Khoa</a>
+				<button class="navbar-toggler" type="button"
+					data-bs-toggle="collapse" data-bs-target="#navbarNav"
+					aria-controls="navbarNav" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<div class="navbar-nav ms-auto">
+						<div class="navbar-brand"
+							th:if="${#authentication.name != 'anonymousUser'}">
+							Welcome, <a class="navbar-brand"
+								th:text="${#authentication.principal.fullName}">User</a>
+						</div>
+						<div class="nav-item">
+							<form method="post" th:action="@{/logout}">
+								<button class="btn btn-danger" type="submit">Đăng xuất</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container my-4">
+			<h1 class="text-center mb-3">Danh Sách Dịch Vụ</h1>
+
+			<!-- Popup thêm dịch vụ -->
+			<div id="addModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 140px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 60%; border-radius: 8px;">
+					<span class="close"
+						style="position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Thêm Dịch Vụ</h2>
+					<form id="addServiceForm" th:action="@{/services/add}"
+						method="POST" th:object="${services}">
+						<div class="mb-3">
+							<label for="name" class="form-label">Tên Dịch Vụ</label> <input
+								type="text" class="form-control" id="name" th:field="*{name}"
+								required>
+						</div>
+						<div class="mb-3">
+							<label for="description" class="form-label">Mô Tả</label>
+							<textarea class="form-control" id="description"
+								th:field="*{description}" required></textarea>
+						</div>
+						<div class="mb-3">
+							<label for="price" class="form-label">Giá</label> <input
+								type="number" class="form-control" id="price"
+								th:field="*{price}" required>
+						</div>
+						<button type="submit" class="btn btn-primary" style = "position: absolute; right: 105px">Gửi</button>
+						<button type="button" class="btn btn-secondary" id="cancelAdd" style="background-color: gray; right: 40px; position: absolute;">Hủy</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Popup sửa dịch vụ -->
+			<div id="editModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 140px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 60%; border-radius: 8px;">
+					<span class="closeEdit" style="position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Sửa Dịch Vụ</h2>
+					<form id="editServiceForm" th:action="@{/services/edit}"
+						method="POST">
+						<input type="hidden" id="editId" name="id">
+						<div class="mb-3">
+							<label for="editName" class="form-label">Tên Dịch Vụ</label> <input
+								type="text" class="form-control" id="editName" name="name"
+								required>
+						</div>
+						<div class="mb-3">
+							<label for="editDescription" class="form-label">Mô Tả</label>
+							<textarea class="form-control" id="editDescription"
+								name="description" required></textarea>
+						</div>
+						<div class="mb-3">
+							<label for="editPrice" class="form-label">Giá</label> <input
+								type="number" class="form-control" id="editPrice" name="price"
+								required>
+						</div>
+						<button type="submit" class="btn btn-primary" style = "position: absolute; right: 105px">Cập Nhật</button>
+						<button type="button" class="btn btn-secondary" id="cancelEdit" style="background-color: gray; right: 40px; position: absolute;">Hủy</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Popup xác nhận xóa dịch vụ -->
+			<div id="deleteModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 250px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 30%; border-radius: 8px;">
+					<span class="closeDelete"  style="position: absolute; top: 5px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Xác nhận xóa </h2>
+					<h2>dịch vụ</h2>
+					<p>Bạn có chắc chắn muốn xóa dịch vụ này?</p>
+					<form id="deleteServiceForm" method="POST">
+						<input type="hidden" name="_csrf" value="CSRF_TOKEN_HERE">
+						<!-- Token CSRF -->
+						<input type="hidden" name="id" value="SERVICE_ID_HERE">
+						<!-- ID dịch vụ -->
+					</form>
+					<button id="confirmDelete" class="btn btn-danger" style = "position: absolute; right: 105px; top: 170px;">Xóa</button>
+					<button type="button" class="btn btn-secondary" id="cancelDelete"  style="background-color: gray; right: 40px; position: absolute; top: 170px;">Hủy</button>
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<div class="input-group">
+					<input type="text" id="searchInput" class="form-control"
+						placeholder="Tìm kiếm theo tên dịch vụ..." style="width: 250px;">
+					<button class="btn btn-primary" id="searchButton">Tìm kiếm</button>
+				</div>
+				<button class="btn btn-primary mb-3" id="openAddModal">Thêm
+					Dịch Vụ</button>
+			</div>
+
+
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Tên Dịch Vụ</th>
+						<th>Mô Tả</th>
+						<th>Giá</th>
+						<th>Hành Động</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="service : ${listServices}">
+						<td th:text="${service.id}"></td>
+						<td th:text="${service.name}"></td>
+						<td th:text="${service.description}"></td>
+						<td th:text="${service.price}"></td>
+						<td>
+							<button class="btn btn-sm btn-primary openEditModal"
+								th:data-id="${service.id}" th:data-name="${service.name}"
+								th:data-description="${service.description}"
+								th:data-price="${service.price}">Sửa</button>
+							<button class="btn btn-sm btn-danger openDeleteModal"
+								th:data-id="${service.id}">Xóa</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div id="pagination" class="my-3 text-center"></div>
+		</div>
+
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+		<script>
+            // Mở popup thêm dịch vụ
+            document.getElementById("openAddModal").onclick = function() {
+                document.getElementById("addModal").style.display = "block";
+                document.getElementById("searchButton").style.display = "none";
+            };
+
+            // Đóng popup khi nhấn vào nút "x"
+            const closeAdd = document.getElementsByClassName("close")[0];
+            closeAdd.onclick = function() {
+                document.getElementById("addModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+            };
+
+            // Đóng popup khi nhấn nút hủy
+            document.getElementById("cancelAdd").onclick = function() {
+                document.getElementById("addModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+           };
+
+            // Mở popup sửa dịch vụ
+            document.querySelectorAll(".openEditModal").forEach((btn) => {
+                btn.onclick = function() {
+                    const serviceId = this.getAttribute("data-id");
+                    const serviceName = this.getAttribute("data-name");
+                    const serviceDescription = this.getAttribute("data-description");
+                    const servicePrice = this.getAttribute("data-price");
+
+                    document.getElementById("editId").value = serviceId;
+                    document.getElementById("editName").value = serviceName;
+                    document.getElementById("editDescription").value = serviceDescription;
+                    document.getElementById("editPrice").value = servicePrice;
+
+                    document.getElementById("editModal").style.display = "block";
+                    document.getElementById("searchButton").style.display = "none";
+                };
+            });
+
+            // Đóng popup sửa khi nhấn vào nút "x"
+            const closeEdit = document.getElementsByClassName("closeEdit")[0];
+            closeEdit.onclick = function() {
+                document.getElementById("editModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+            };
+
+            // Đóng popup sửa khi nhấn nút hủy
+            document.getElementById("cancelEdit").onclick = function() {
+                document.getElementById("editModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+            };
+
+            //sự kiện popup xóa dịch vụ
+            document.addEventListener("DOMContentLoaded", function () {
+                // Lấy các phần tử từ DOM
+                const deleteModal = document.getElementById("deleteModal"); // Modal xóa
+                const closeDelete = document.getElementsByClassName("closeDelete")[0];  // Nút đóng modal
+                const cancelDelete = document.getElementById("cancelDelete");  // Nút hủy modal
+                const deleteServiceForm = document.getElementById("deleteServiceForm");  // Form xóa dịch vụ
+
+                // Gắn sự kiện cho tất cả các nút "Xóa"
+                document.querySelectorAll(".openDeleteModal").forEach((btn) => {
+			        btn.onclick = function () {
+			            const serviceId = this.getAttribute("data-id");
+			            if (serviceId) {
+			                const csrfToken = document.querySelector('input[name="_csrf"]').value; 
+			                deleteServiceForm.innerHTML = `
+			                    <input type="hidden" name="_csrf" value="${csrfToken}">
+			                    <input type="hidden" name="id" value="${serviceId}">
+			                `;
+			                deleteModal.style.display = "block";
+			                document.getElementById("searchButton").style.display = "none";
+			            } else {
+			                alert("Không tìm thấy ID dịch vụ.");
+			            }
+			        };
+			    });
+
+                // Gắn sự kiện cho nút "Xóa" trong modal
+                document.getElementById("confirmDelete").onclick = function () {
+			        const serviceId = deleteServiceForm.querySelector('input[name="id"]').value; 
+			        if (!serviceId) {
+			            alert("Không thể xóa vì không tìm thấy ID dịch vụ!");
+			            return;
+			        }
+			
+			        fetch(`/services/delete/${serviceId}`, {
+			            method: "DELETE",
+			            headers: {
+			                'Content-Type': 'application/json',
+			                'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value 
+			            }
+			        })
+			        .then(response => {
+			            if (response.ok) {
+			                return response.text(); 
+			            } else {
+			                throw new Error("Xóa dịch vụ không thành công!");
+			            }
+			        })
+			        .then(message => {
+			            alert(message); 
+			            window.location.reload(); 
+			        })
+			        .catch(error => {
+			            console.error("Error:", error);
+			            alert("Đã xảy ra lỗi khi xóa dịch vụ!");
+			        });
+			    };
+
+                // Đóng modal khi nhấn vào nút "x"
+                closeDelete.onclick = function () {
+                    deleteModal.style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                };
+
+                // Đóng modal khi nhấn nút "Hủy"
+                cancelDelete.onclick = function () {
+                    deleteModal.style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                };
+
+                // Đóng modal khi nhấn ra ngoài vùng nội dung
+                window.onclick = function (event) {
+                    if (event.target === deleteModal) {
+                        deleteModal.style.display = "none";
+                    }
+                };
+            });
+
+            // Đóng popup khi nhấn ra ngoài vùng nội dung
+            window.onclick = function(event) {
+                if (event.target === document.getElementById("addModal")) {
+                    document.getElementById("addModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                }
+                if (event.target === document.getElementById("editModal")) {
+                    document.getElementById("editModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                }
+                if (event.target === document.getElementById("deleteModal")) {
+                    document.getElementById("deleteModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                }
+            };
+            
+            // Tìm kiếm dịch vụ
+		document.getElementById('searchButton').addEventListener('click', function() {
+		    const searchValue = document.getElementById('searchInput').value;
+		
+		    // Gửi yêu cầu tìm kiếm đến server
+		    fetch(`/services/search?name=${encodeURIComponent(searchValue)}`)
+		        .then(response => response.json())
+		        .then(data => {
+		            // Xóa nội dung bảng hiện tại
+		            const tbody = document.querySelector('tbody');
+		            tbody.innerHTML = '';
+		
+		            // Kiểm tra nếu không có dịch vụ nào được tìm thấy
+		            if (data.length === 0) {
+		                const noResultsRow = document.createElement('tr');
+		                noResultsRow.innerHTML = '<td colspan="5" class="text-center">Không tìm thấy dịch vụ nào!</td>';
+		                tbody.appendChild(noResultsRow);
+		                return;
+		            }
+		
+		            // Thêm kết quả tìm kiếm vào bảng
+		            data.forEach(service => {
+		                const row = document.createElement('tr');
+		                row.innerHTML = `
+		                    <td>${service.id}</td>
+		                    <td>${service.name}</td>
+		                    <td>${service.description}</td>
+		                    <td>${service.price}</td>
+		                    <td>
+		                        <button class="btn btn-sm btn-primary openEditModal"
+		                                data-id="${service.id}" data-name="${service.name}"
+		                                data-description="${service.description}"
+		                                data-price="${service.price}">Sửa</button>
+		                        <button class="btn btn-sm btn-danger openDeleteModal"
+		                                data-id="${service.id}">Xóa</button>
+		                    </td>
+		                `;
+		                tbody.appendChild(row);
+		            });
+		        })
+		        .catch(error => {
+		            console.error('Lỗi:', error);
+		            alert("Đã xảy ra lỗi trong quá trình tìm kiếm!");
+		        });
+		});
+        </script>
+		<script>
+        let currentPage = /*[[${currentPage}]]*/ 1;
+        const itemsPerPage = /*[[${size}]]*/ 5;
+        let servicesData = /*[[${listServices}]]*/ [];
+        
+        function renderTable(data) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedData = data.slice(start, end);
+
+            paginatedData.forEach(service => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${service.id}</td>
+                    <td>${service.name}</td>
+                    <td>${service.description}</td>
+                    <td>${service.price}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary openEditModal"
+                                data-id="${service.id}" data-name="${service.name}"
+                                data-description="${service.description}"
+                                data-price="${service.price}">Sửa</button>
+                        <button class="btn btn-sm btn-danger openDeleteModal"
+                                data-id="${service.id}">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderPagination(data.length);
+        }
+
+        function renderPagination(totalItems) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = '';
+
+            const totalPages = /*[[${totalPages}]]*/ 1;
+
+            // Tạo nút Previous
+            const prevButton = document.createElement('button');
+            prevButton.innerText = 'Previous';
+            prevButton.className = 'btn btn-secondary mx-1';
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable(servicesData);
+                }
+            };
+            paginationContainer.appendChild(prevButton);
+
+            // Tạo nút cho từng trang
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.innerText = i;
+                pageButton.className = `btn btn-secondary mx-1 ${currentPage === i ? 'active' : ''}`;
+                pageButton.onclick = function() {
+                    currentPage = i;
+                    renderTable(servicesData);
+                };
+                paginationContainer.appendChild(pageButton);
+            }
+
+            // Tạo nút Next
+            const nextButton = document.createElement('button');
+            nextButton.innerText = 'Next';
+            nextButton.className = 'btn btn-secondary mx-1';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable(servicesData);
+                }
+            };
+            paginationContainer.appendChild(nextButton);
+        }
+	     // Tải dữ liệu dịch vụ và hiển thị
+	        fetch('/services') // Thay đổi đường dẫn nếu cần
+	            .then(response => response.json())
+	            .then(data => {
+	                servicesData = data; // Lưu trữ dữ liệu dịch vụ
+	                renderTable(servicesData);
+	       });
+        </script>
+	</div>
+</body>
+</html>

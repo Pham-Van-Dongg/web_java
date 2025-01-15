@@ -39,7 +39,7 @@ public class User {
 	
 	
 	public enum Role {
-        Admin, Doctor
+        Admin, Doctor, Staff
     }
 	
 	public Long getId() {

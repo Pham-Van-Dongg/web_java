@@ -17,11 +17,8 @@ public class Patients {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Khóa chính với giá trị tự động tăng
     private Long id;
 
-    @Column(name = "first_name", nullable = false, length = 20)
-    private String firstName;
-
-    @Column(name = "last_name", nullable = false, length = 255)
-    private String lastName;
+    @Column(name = "name_id", nullable = false, length = 20)
+    private String name_id;
 
     @Temporal(TemporalType.DATE)
     @Column(name = "birth_date", nullable = false)
@@ -29,67 +26,61 @@ public class Patients {
 
     @Column(name = "phone", length = 15)
     private String phone;
-
-    @Column(name = "email", unique = true, length = 45)
-    private String email;
-
+    
     @Column(name = "address", length = 255)
     private String address;
 
-    // Getters và setters để thao tác dữ liệu
-    public Long getId() {
-        return id;
-    }
+	public Patients(Long id, String name_id, Date birthDate, String phone, String address) {
+		super();
+		this.id = id;
+		this.name_id = name_id;
+		this.birthDate = birthDate;
+		this.phone = phone;
+		this.address = address;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public Patients() {
+		
+	}
+	public Long getId() {
+		return id;
+	}
 
-    public String getFirstName() {
-        return firstName;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+	public String getName_id() {
+		return name_id;
+	}
 
-    public String getLastName() {
-        return lastName;
-    }
+	public void setName_id(String name_id) {
+		this.name_id = name_id;
+	}
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+	public Date getBirthDate() {
+		return birthDate;
+	}
 
-    public Date getBirthDate() {
-        return birthDate;
-    }
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
 
-    public void setBirthDate(Date birthDate) {
-        this.birthDate = birthDate;
-    }
+	public String getPhone() {
+		return phone;
+	}
 
-    public String getPhone() {
-        return phone;
-    }
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+	public String getAddress() {
+		return address;
+	}
 
-    public String getEmail() {
-        return email;
-    }
+	public void setAddress(String address) {
+		this.address = address;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    
 }

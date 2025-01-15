@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Danh Sách Dịch Vụ</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet" href="/index_css.css">
+<link rel="stylesheet" href="/service.css">
+</head>
+
+<body>
+	<!-- Sidebar -->
+	<div id="sidebar">
+		<div class="sidebar-header">
+			<h3>Quản lý phòng khám</h3>
+		</div>
+		<ul class="list-unstyled components">
+			<li><a th:href="@{/patients}">Quản lý bệnh nhân</a></li>
+			<li><a th:href="@{/appointments}">Quản lý lịch khám</a></li>
+			<li><a th:href="@{/services}">Quản lý dịch vụ</a></li>
+			<li><a th:href="@{/bills}">Quản lý hóa đơn</a></li>
+		</ul>
+	</div>
+
+	<!-- Content -->
+	<div class="content">
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container-fluid">
+				<a class="navbar-brand">Phòng Khám Nha Khoa</a>
+				<button class="navbar-toggler" type="button"
+					data-bs-toggle="collapse" data-bs-target="#navbarNav"
+					aria-controls="navbarNav" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <div class="navbar-brand" th:if="${#authentication.name != 'anonymousUser'}">
+                        Welcome, <a class="navbar-brand"
+                                    th:text="${#authentication.principal.fullName}">User</a>
+                    </div>
+                    <div class="nav-item">
+                        <form method="post" th:action="@{/logout}">
+                            <button class="btn btn-danger" type="submit">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+			</div>
+		</nav>
+
+		<div class="container my-4">
+			<h1 class="text-center mb-3">Danh sách lịch khám</h1>
+
+			<!-- Popup thêm dịch vụ -->
+			<div id="addModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 50px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 90%; border-radius: 8px;">
+					<span class="close" style="position: absolute; top: 7px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Tạo lịch khám</h2>
+					<form id="addServiceForm" th:action="@{/appointments/add}"
+						method="POST" th:object="${appointments}">
+						<div class="mb-3">
+							<label for="mahoadon" class="form-label">Mã hóa đơn</label> <input
+								type="text" class="form-control" id="mahoadon"
+								th:field="*{mahoadon}" required>
+						</div>
+
+						<div class="mb-3">
+							<label for="name" class="form-label">Tên</label> <input
+								type="text" class="form-control" id="name" th:field="*{name}"
+								required></input>
+						</div>
+
+						<div class="mb-3">
+							<label for="doctor" class="form-label">Tên bác sĩ</label> <select
+								class="form-control" id="doctor" th:field="*{doctor}" required>
+								<!-- Tùy chọn mặc định -->
+								<option value="" disabled>Chọn bác sĩ</option>
+								<!-- Danh sách tĩnh -->
+								<option value="Bác sĩ A">Bác sĩ A</option>
+								<option value="Bác sĩ B">Bác sĩ B</option>
+								<option value="Bác sĩ C">Bác sĩ C</option>
+								<option value="Bác sĩ D">Bác sĩ D</option>
+							</select>
+						</div>
+
+
+						<div class="mb-3">
+							<label for="appointment_date" class="form-label">Ngày
+								khám</label> <input type="date" class="form-control"
+								id="appointment_date" th:field="*{appointment_date}" required>
+						</div>
+
+						<div class="mb-3">
+							<label for="appointment_time" class="form-label">Thời
+								gian khám</label> <input type="time" class="form-control"
+								id="appointment_time" th:field="*{appointment_time}" required>
+						</div>
+
+						<div class="mb-3">
+							<label for="service_id" class="form-label">Dịch vụ</label> <select
+								class="form-control" id="service_id" th:field="*{service_id}"
+								required>
+								<option value="">Chọn dịch vụ</option>
+								<option th:each="service : ${services}" th:value="${service.id}"
+									th:text="${service.name}"></option>
+							</select>
+						</div>
+
+						<button type="submit" class="btn btn-primary" style = "position: absolute; right: 112px">Gửi</button>
+						<button type="button" class="btn btn-secondary" id="cancelAdd" style="background-color: gray; right: 42px; position: absolute;">Hủy</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Popup sửa dịch vụ -->
+			<div id="editModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 26px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 95%; border-radius: 8px;">
+					<span class="closeEdit" style="position: absolute; top: 7px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Sửa thông tin</h2>
+					<h2>lịch khám</h2>
+					<form id="editServiceForm" th:action="@{/appointments/edit}"
+						method="POST">
+						<input type="hidden" id="editId" name="id">
+						<div class="mb-3">
+							<label for="editMahoadon" class="form-label">Mã hóa đơn</label> <input
+								type="text" class="form-control" id="editMahoadon"
+								name="mahoadon" required>
+						</div>
+
+						<div class="mb-3">
+							<label for="editDescription" class="form-label">Tên người
+								đặt lịch</label> <input type="text" class="form-control"
+								id="editDescription" name="name" required></input>
+						</div>
+
+
+
+						<div class="mb-3">
+							<label for="editDoctor" class="form-label">Tên bác sĩ</label> <select
+								class="form-control" id="editDoctor" name="doctor" required>
+								<!-- Tùy chọn mặc định -->
+								<option value="" disabled>Chọn bác sĩ</option>
+								<!-- Danh sách tĩnh -->
+								<option value="Bác sĩ A">Bác sĩ A</option>
+								<option value="Bác sĩ B">Bác sĩ B</option>
+								<option value="Bác sĩ C">Bác sĩ C</option>
+								<option value="Bác sĩ D">Bác sĩ D</option>
+							</select>
+						</div>
+
+						<div class="mb-3">
+							<label for="editAppointments_date" class="form-label">Ngày
+								đặt lịch</label> <input type="date" class="form-control"
+								id="editAppointments_date" name="appointment_date" required>
+						</div>
+
+						<div class="mb-3">
+							<label for="editAppointments_time" class="form-label">Đặt
+								giờ</label> <input type="time" class="form-control"
+								id="editAppointments_time" name="appointment_time" required>
+						</div>
+
+						<div class="mb-3">
+							<label for="editService_id" class="form-label">Dịch vụ</label> <select
+								class="form-control" id="editService_id" name="service_id"
+								required>
+								<option value="" disabled selected>Chọn dịch vụ</option>
+								<option th:each="service : ${services}" th:value="${service.id}"
+									th:text="${service.name}"></option>
+							</select>
+						</div>
+
+
+						<button type="submit" class="btn btn-primary" style = "position: absolute; right: 112px">Cập Nhật</button>
+						<button type="button" class="btn btn-secondary" id="cancelEdit"  style="background-color: gray; right: 42px; position: absolute;">Hủy</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Popup xác nhận xóa dịch vụ -->
+			<div id="deleteModal" class="modal">
+				<div class="modal-content" style="background-color: white; margin: 230px auto; padding: 20px; border: 1px solid #888; width: 20%; height: 32%; border-radius: 8px;">
+					<span class="closeDelete" style="position: absolute; top: 7px; right: 20px; font-size: 30px; cursor: pointer;">&times;</span>
+					<h2>Xác nhận xóa dịch vụ</h2>
+					<p>Bạn có chắc chắn muốn xóa dịch vụ này?</p>
+					<form id="deleteServiceForm" method="POST">
+						<input type="hidden" name="_csrf" value="CSRF_TOKEN_HERE" />
+						<!-- Token CSRF -->
+						<input type="hidden" name="id" value="SERVICE_ID_HERE" />
+						<!-- ID dịch vụ -->
+					</form>
+					<button id="confirmDelete" class="btn btn-danger" style = "position: absolute; right: 100px; top: 180px;">Xóa</button>
+					<button type="button" class="btn btn-secondary" id="cancelDelete" style="background-color: gray; right: 30px; top: 180px; position: absolute;">
+						Hủy</button>
+				</div>
+			</div>
+
+			<div class="d-flex justify-content-between align-items-center mb-3">
+				<div class="input-group">
+					<input type="text" id="searchInput" class="form-control"
+					placeholder="Tìm kiếm theo tên lịch khám..." style="width: 250px;">
+					<button class="btn btn-primary" id="searchButton">Tìm kiếm</button>
+				</div>
+				<button class="btn btn-primary mb-3" id="openAddModal">Thêm lịch khám</button>
+			</div>
+			
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Mã hóa đơn</th>
+						<th>Tên</th>
+						<th>Bác sĩ</th>
+						<th>Ngày</th>
+						<th>Giờ</th>
+						<th>Dịch vụ</th>
+						<th>Hành động</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="appointments : ${listappointments}">
+						<td th:text="${appointments.id}"></td>
+						<td th:text="${appointments.mahoadon}"></td>
+						<td th:text="${appointments.name}"></td>
+						<td th:text="${appointments.doctor}"></td>
+						<!-- Sử dụng th:text để hiển thị ngày -->
+						<td
+							th:text="${#dates.format(appointments.appointment_date, 'dd/MM/yyyy')}"></td>
+						<td th:text="${appointments.appointment_time}"></td>
+						<td th:text="${appointments.service.name}"></td>
+
+						<td>
+							<button class="btn btn-sm btn-primary openEditModal"
+								th:data-id="${appointments.id}"
+								th:data-mahoadon="${appointments.mahoadon}"
+								th:data-name="${appointments.name}"
+								th:data-doctor="${appointments.doctor}"
+								th:data-appointment-date="${appointments.appointment_date}"
+								th:data-appointment-time="${appointments.appointment_time}"
+								th:data-service-id="${appointments.service.id}">Sửa</button>
+							<button class="btn btn-sm btn-danger openDeleteModal"
+								th:data-id="${appointments.id}">Xóa</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<script
+			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+		<script>
+            // Mở popup thêm dịch vụ
+            document.getElementById("openAddModal").onclick = function() {
+                document.getElementById("addModal").style.display = "block";
+                document.getElementById("searchButton").style.display = "none";
+            };
+
+            // Đóng popup khi nhấn vào nút "x"
+            const closeAdd = document.getElementsByClassName("close")[0];
+            closeAdd.onclick = function() {
+                document.getElementById("addModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+            };
+
+            // Đóng popup khi nhấn nút hủy
+            document.getElementById("cancelAdd").onclick = function() {
+                document.getElementById("addModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+           };
+
+        // Gắn sự kiện cho tất cả các nút "Sửa"
+           document.querySelectorAll(".openEditModal").forEach((btn) => {
+               btn.onclick = function () {
+                   // Lấy dữ liệu từ thuộc tính data- của nút
+                   const id = this.getAttribute("data-id");
+                   const mahoadon = this.getAttribute("data-mahoadon");
+                   const name = this.getAttribute("data-name");
+                   const doctor = this.getAttribute("data-doctor");
+                   const appointmentDate = this.getAttribute("data-appointment-date");
+                   const appointmentTime = this.getAttribute("data-appointment-time");
+                   const serviceId = this.getAttribute("data-service-id");
+                   const dateObj = new Date(appointmentDate);
+
+                	// Định dạng ngày theo chuẩn YYYY-MM-DD
+                	const formattedDate = dateObj.toISOString().split('T')[0];
+
+                	// Gán giá trị vào trường input
+                
+                   console.log(serviceId);
+                   // Gán giá trị vào các trường input trong form
+                   document.getElementById("editId").value = id;
+                   document.getElementById("editMahoadon").value = mahoadon;
+                   document.getElementById("editDescription").value = name;
+                   document.getElementById("editDoctor").value = doctor;
+                   document.getElementById("editAppointments_date").value = formattedDate;
+                   document.getElementById("editAppointments_time").value = appointmentTime;
+                   document.getElementById("editService_id").value = serviceId;
+
+                   // Hiển thị popup
+                   editModal.style.display = "block";
+                   document.getElementById("searchButton").style.display = "none";
+               };
+           });
+
+            // Đóng popup sửa khi nhấn vào nút "x"
+            const closeEdit = document.getElementsByClassName("closeEdit")[0];
+            closeEdit.onclick = function() {
+                document.getElementById("editModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+            };
+
+            // Đóng popup sửa khi nhấn nút hủy
+            document.getElementById("cancelEdit").onclick = function() {
+                document.getElementById("editModal").style.display = "none";
+                document.getElementById("searchButton").style.display = "block";
+            };
+
+            //sự kiện popup xóa dịch vụ
+            document.addEventListener("DOMContentLoaded", function () {
+                // Lấy các phần tử từ DOM
+                const deleteModal = document.getElementById("deleteModal"); // Modal xóa
+                const closeDelete = document.getElementsByClassName("closeDelete")[0];  // Nút đóng modal
+                const cancelDelete = document.getElementById("cancelDelete");  // Nút hủy modal
+                const deleteServiceForm = document.getElementById("deleteServiceForm");  // Form xóa dịch vụ
+
+                // Gắn sự kiện cho tất cả các nút "Xóa"
+                document.querySelectorAll(".openDeleteModal").forEach((btn) => {
+			        btn.onclick = function () {
+			            const id = this.getAttribute("data-id");
+			            if (id) {
+			                const csrfToken = document.querySelector('input[name="_csrf"]').value; 
+			                deleteServiceForm.innerHTML = `
+			                    <input type="hidden" name="_csrf" value="${csrfToken}">
+			                    <input type="hidden" name="id" value="${id}">
+			                `;
+			                deleteModal.style.display = "block";
+			                document.getElementById("searchButton").style.display = "none";
+			            } else {
+			                alert("Không tìm thấy ID dịch vụ.");
+			            }
+			        };
+			    });
+
+                // Gắn sự kiện cho nút "Xóa" trong modal
+                document.getElementById("confirmDelete").onclick = function () {
+			        const id = deleteServiceForm.querySelector('input[name="id"]').value; 
+			        if (!id) {
+			            alert("Không thể xóa vì không tìm thấy ID dịch vụ!");
+			            return;
+			        }
+			
+			        fetch(`/appointments/delete/${id}`, {
+			            method: "DELETE",
+			            headers: {
+			                'Content-Type': 'application/json',
+			                'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value 
+			            }
+			        })
+			        .then(response => {
+			            if (response.ok) {
+			                return response.text(); 
+			            } else {
+			                throw new Error("Xóa dịch vụ không thành công!");
+			            }
+			        })
+			        .then(message => {
+			            alert(message); 
+			            window.location.reload(); 
+			        })
+			        .catch(error => {
+			            console.error("Error:", error);
+			            alert("Đã xảy ra lỗi khi xóa dịch vụ!");
+			        });
+			    };
+
+                // Đóng modal khi nhấn vào nút "x"
+                closeDelete.onclick = function () {
+                    deleteModal.style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                };
+
+                // Đóng modal khi nhấn nút "Hủy"
+                cancelDelete.onclick = function () {
+                    deleteModal.style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                };
+
+                // Đóng modal khi nhấn ra ngoài vùng nội dung
+                window.onclick = function (event) {
+                    if (event.target === deleteModal) {
+                        deleteModal.style.display = "none";
+                    }
+                };
+            });
+
+            // Đóng popup khi nhấn ra ngoài vùng nội dung
+            window.onclick = function(event) {
+                if (event.target === document.getElementById("addModal")) {
+                    document.getElementById("addModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                }
+                if (event.target === document.getElementById("editModal")) {
+                    document.getElementById("editModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                }
+                if (event.target === document.getElementById("deleteModal")) {
+                    document.getElementById("deleteModal").style.display = "none";
+                    document.getElementById("searchButton").style.display = "block";
+                }
+            };
+            //Tìm kiếm lịch khám 
+            document.getElementById('searchButton').addEventListener('click', function() {
+                const searchValue = document.getElementById('searchInput').value;
+
+                // Gửi yêu cầu tìm kiếm đến server
+                fetch(`/appointments/search?name=${encodeURIComponent(searchValue)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Xóa nội dung bảng hiện tại
+                        const tbody = document.querySelector('tbody');
+                        tbody.innerHTML = '';
+
+                        // Kiểm tra nếu không có lịch khám nào được tìm thấy
+                        if (data.length === 0) {
+                            const noResultsRow = document.createElement('tr');
+                            noResultsRow.innerHTML = '<td colspan="8" class="text-center">Không tìm thấy lịch khám nào!</td>';
+                            tbody.appendChild(noResultsRow);
+                            return;
+                        }
+
+                        // Thêm kết quả tìm kiếm vào bảng
+                        data.forEach(appointment => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${appointment.id}</td>
+                                <td>${appointment.mahoadon}</td>
+                                <td>${appointment.name}</td>
+                                <td>${appointment.doctor}</td>
+                                <td>${new Date(appointment.appointment_date).toLocaleDateString('vi-VN')}</td>
+                                <td>${appointment.appointment_time}</td>
+                                <td>${appointment.service.name}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary openEditModal" data-id="${appointment.id}">Sửa</button>
+                                    <button class="btn btn-sm btn-danger openDeleteModal" data-id="${appointment.id}">Xóa</button>
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Lỗi:', error);
+                        alert("Đã xảy ra lỗi trong quá trình tìm kiếm!");
+                    });
+            });
+        </script>
+	</div>
+</body>
+</html>
